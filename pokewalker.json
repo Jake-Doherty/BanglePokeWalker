@@ -1,0 +1,48 @@
+{
+  "view": "MAIN",
+  "menuIdx": 4,
+  "scrollIdx": 0,
+  "steps": 0,
+  "watts": 0,
+  "pokeID": "157",
+  "route": "Lakes2",
+  "history": [
+    9900,
+    4500,
+    300,
+    1000,
+    6378,
+    50,
+    4100
+  ],
+  "inventory": [
+    "016",
+    "019"
+  ],
+  "items": [
+    "Potion",
+    "Poké Ball"
+  ],
+  "volIdx": 4,
+  "contrIdx": 7,
+  "volume": 0.4,
+  "contrast": 0.7000000000000001,
+  "frame": 0,
+  "emotion": "neutral",
+  "dowsing": {
+    "target": null,
+    "cursor": 0,
+    "attempts": 0,
+    "msg": ""
+  },
+  "battle": {
+    "enemyID": "157",
+    "enemyHP": 3,
+    "cursor": 0
+  },
+  "msgBox": {
+    "title": "",
+    "body": "",
+    "timer": null
+  }
+}
