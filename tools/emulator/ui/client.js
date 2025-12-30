@@ -26,12 +26,12 @@ function handleCmd(o) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       break;
     case "fillRect":
-      ctx.fillStyle = "#ddd";
-      ctx.fillRect(o.x1, o.y1, o.x2 - o.x1, o.y2 - o.y1);
+      ctx.fillStyle = o.color || "#fff"; // Use the color sent by the server
+      ctx.fillRect(o.x1, o.y1, o.x2 - o.x1 + 1, o.y2 - o.y1 + 1);
       break;
     case "centerString":
-      ctx.fillStyle = "#fff";
-      ctx.font = "10px monospace";
+      ctx.fillStyle = "#000"; // Typical for this UI
+      ctx.font = "bold 16px monospace"; // Closer to the '6x8:2' font
       ctx.textAlign = "center";
       ctx.fillText(o.text, o.x, o.y);
       break;
@@ -93,7 +93,8 @@ const leftBtn = document.getElementById("leftBtn");
 const centerBtn = document.getElementById("centerBtn");
 const rightBtn = document.getElementById("rightBtn");
 function highlightButton(name) {
-  const el = name === "LEFT" ? leftBtn : name === "RIGHT" ? rightBtn : centerBtn;
+  const el =
+    name === "LEFT" ? leftBtn : name === "RIGHT" ? rightBtn : centerBtn;
   if (!el) return;
   el.style.transition = "background 0.12s";
   const orig = el.style.background;
