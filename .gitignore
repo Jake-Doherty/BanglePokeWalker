@@ -1,0 +1,13 @@
+# Ignore generated pokewalker state and emulator runtime files
+pokewalker.json
+data/pokewalker.json
+
+# Emulator runtime files
+tools/emulator/emulator.log
+tools/emulator/emulator.pid
+tools/emulator/tmp_emu_storage/
+
+# Node modules (if any) and OS files
+node_modules/
+.DS_Store
+Thumbs.db
