@@ -33,6 +33,7 @@
       enemyID: "157",
       enemyHP: 3,
       cursor: 0,
+      msg: "",
     },
     msgBox: {
       title: "",
