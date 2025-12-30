@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// Simple wrapper so you can run: `node espruimulator --args`
+require('./tools/emulator/run_emulator_ui.js');
