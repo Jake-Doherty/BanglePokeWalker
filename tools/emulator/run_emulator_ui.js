@@ -38,6 +38,51 @@ if (process.argv[2] === 'status') {
   process.exit(0);
 }
 
+// restart: stop existing (if any) and spawn a new detached emulator
+if (process.argv[2] === 'restart') {
+  try {
+    if (fs.existsSync(PID_FILE)) {
+      const pid = parseInt(fs.readFileSync(PID_FILE, 'utf8'), 10);
+      if (pid) {
+        try { process.kill(pid); console.log('Killed pid', pid); } catch (e) { console.error('Failed to kill pid', pid, e.message); }
+      }
+      try { fs.unlinkSync(PID_FILE); } catch (e) {}
+    }
+    // spawn a fresh detached child
+    const child = require('child_process').spawn(process.execPath, [__filename, '--detach'], {
+      detached: true,
+      stdio: 'ignore',
+      env: Object.assign({}, process.env, { __EMULATOR_DETACHED: '1' })
+    });
+    child.unref();
+    console.log('Spawned new detached emulator (pid', child.pid + ')');
+    process.exit(0);
+  } catch (e) {
+    console.error('Restart failed', e);
+    process.exit(2);
+  }
+}
+
+// rotate-logs: rename current log and signal running emulator to reopen
+if (process.argv[2] === 'rotate-logs') {
+  try {
+    if (!fs.existsSync(LOG_FILE)) { console.log('No log file to rotate'); process.exit(0); }
+    const dest = LOG_FILE + '.' + Date.now();
+    fs.renameSync(LOG_FILE, dest);
+    console.log('Rotated log to', dest);
+    if (fs.existsSync(PID_FILE)) {
+      const pid = parseInt(fs.readFileSync(PID_FILE, 'utf8'), 10);
+      if (pid) {
+        try { process.kill(pid, 'SIGUSR2'); console.log('Signalled pid', pid, 'to reopen logs'); } catch (e) { console.error('Failed to signal pid', pid, e.message); }
+      }
+    }
+    process.exit(0);
+  } catch (e) {
+    console.error('rotate-logs failed', e);
+    process.exit(2);
+  }
+}
+
 function sendEvent(obj) {
   const data = "data: " + JSON.stringify(obj) + "\n\n";
   sseClients.forEach((res) => {
@@ -169,10 +214,9 @@ server.listen(PORT, () => {
 
 // Setup logging and PID file if requested (detached or --log)
 let logStream = null;
-function startLoggingIfNeeded(){
-  const shouldLog = process.env.__EMULATOR_DETACHED === '1' || process.argv.includes('--log') || process.argv.includes('--detach');
-  if(!shouldLog) return;
+function setupLogging(){
   try{
+    if(logStream) try{ logStream.end(); }catch(e){}
     logStream = fs.createWriteStream(LOG_FILE, { flags: 'a' });
     const origLog = console.log;
     const origErr = console.error;
@@ -180,6 +224,17 @@ function startLoggingIfNeeded(){
     console.error = function(){ origErr.apply(console, arguments); try{ logStream.write(new Date().toISOString() + ' ERR: ' + Array.from(arguments).join(' ') + '\n'); }catch(e){} };
   }catch(e){ console.error('Failed to open log file', e); }
 }
+
+function startLoggingIfNeeded(){
+  const shouldLog = process.env.__EMULATOR_DETACHED === '1' || process.argv.includes('--log') || process.argv.includes('--detach');
+  if(!shouldLog) return;
+  setupLogging();
+}
+
+// Reopen logs on SIGUSR2 (used by rotate-logs)
+process.on('SIGUSR2', ()=>{
+  try{ console.log('SIGUSR2 received - reopening log file'); setupLogging(); }catch(e){ console.error('SIGUSR2 handler error', e); }
+});
 
 function writePid(){
   try{ fs.writeFileSync(PID_FILE, String(process.pid)); console.log('Wrote pid', process.pid, 'to', PID_FILE); }catch(e){ console.error('Failed to write pid file', e); }
@@ -197,6 +252,12 @@ process.on('SIGINT', ()=>{ console.log('SIGINT received, shutting down'); server
 // Start logging and write pid when server is ready
 startLoggingIfNeeded();
 if(process.env.__EMULATOR_DETACHED === '1' || process.argv.includes('--detach')) writePid();
+
+// If this process is the detached child, ensure we write a pid and start logging now
+if(process.env.__EMULATOR_DETACHED === '1'){
+  startLoggingIfNeeded();
+  writePid();
+}
 
 // --------------------
 // Emulated globals
