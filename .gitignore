@@ -3,7 +3,7 @@ pokewalker.json
 data/pokewalker.json
 
 # Emulator runtime files
-tools/emulator/emulator.log
+tools/emulator/logs/
 tools/emulator/emulator.pid
 tools/emulator/tmp_emu_storage/
 
@@ -11,3 +11,6 @@ tools/emulator/tmp_emu_storage/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Github folder conaining copilot intstructions etc...
+.github/
