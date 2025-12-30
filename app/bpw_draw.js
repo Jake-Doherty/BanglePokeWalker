@@ -9,12 +9,19 @@
   // -------------------------------------------------------------
   // Icon Menu Rendering
   exports.drawIconMenu = function (state, DATA, THEME) {
-    g.drawRect(20, 10, 156, 40); // Menu Title Box
+    function drawSlctArrw(x) {
+      g.fillPoly([x + 14, 60, x + 6, 50, x + 22, 50]);
+    }
+    // Menu Title Box
+    g.drawRect(20, 10, 156, 40);
+    //Chosen Menu name
     g.setFont("6x8", 2).drawString(
       DATA.menuItems[state.menuIdx],
       88 - g.stringWidth(DATA.menuItems[state.menuIdx]) / 2,
       18
     );
+
+    drawSlctArrw(state.menuIdx * 30);
 
     // Draw Arrows
     g.fillPoly([10, 25, 18, 15, 18, 35]); // Left
@@ -23,10 +30,13 @@
     // Draw Icon Row (with backup rectangles if sprite missing)
     DATA.menuItems.forEach((item, i) => {
       let ico = STORAGE.read(`Pokéwalker_${DATA.menuICONS[i]}.img`);
-      let x = 75 + i * 45 - state.menuIdx * 45; // Scrolling effect
+      let x = i * (176 / 6) + 176 / 6 / 2 - 12;
 
       try {
-        if (ico) g.drawImage(ico, x, 50, { scale: 2 });
+        if (ico)
+          g.drawImage(ico, x, 65, {
+            scale: 1.5,
+          });
       } catch (error) {
         if (!ico) {
           g.drawRect(x, 70, x + 30, 100);
@@ -83,7 +93,7 @@
   // -------------------------------------------------------------
   // Pokéradar - Search
   exports.drawRadarSearch = function (state, DATA, THEME) {
-    g.setFont("6x8", 2).drawString("SEARCHING...", 30, 20);
+    g.setFont("6x8", 2).centerString("SEARCHING...", 88, 20);
     // Draw 4 grass patches
     for (let i = 0; i < 4; i++) {
       g.drawRect(20 + i * 35, 70, 50 + i * 35, 100);
@@ -186,11 +196,15 @@
     let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
     let RouteImg = STORAGE.read(`Route_${state.route}.img`);
     if (PkImg && RouteImg) {
-      g.drawImage(RouteImg, 0, 40, { scale: 3 });
-      g.drawImage(PkImg, 45, 5, { scale: 2 });
+      g.drawImage(RouteImg, 0, 0, {
+        scale: 2,
+      });
+      g.drawImage(PkImg, 45, 5, {
+        scale: 2,
+      });
     } else if (!PkImg && !RouteImg) {
       g.setFont("6x8", 2).drawString("No Poké", 0, 155);
-      g.setFont("6x8", 2).drawString("Oops", 0, 155);
+      g.setFont("6x8", 2).drawString("Oops", 0, 140);
     }
 
     g.setFont("6x8", 3).drawString(
@@ -198,6 +212,7 @@
       170 - g.stringWidth(state.steps.toString()),
       115
     );
+    g.setFont("4x6", 2).drawString("STEPS", 170 - g.stringWidth("STEPS"), 140);
     g.setFont("6x8", 2).drawString(state.watts + "W", 10, 115);
   };
 })(typeof exports !== "undefined" ? exports : (this.exports = {}));
