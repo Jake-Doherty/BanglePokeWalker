@@ -1,17 +1,16 @@
 (function (exports) {
   const STORAGE = require("Storage");
   const STATE = require("bpw_state.js");
+  const DATA = require("bpw_data.js");
   const FILE = "pokewalker.json";
 
   function vibrate() {
     Bangle.buzz(250, STATE.state.volume);
   }
-  exports.vibrate = vibrate;
 
   function save() {
     STORAGE.writeJSON(FILE, STATE.state);
   }
-  exports.save = save;
 
   function applySettings() {
     try {
@@ -24,7 +23,6 @@
       showPokeMessage("ERROR!", "Try Again!", 3000);
     }
   }
-  exports.applySettings = applySettings;
 
   /**
    * Custom Message Function
@@ -33,7 +31,7 @@
    * @param {number} ms - How long to show it (in milliseconds)
    */
 
-  exports.showPokeMessage = function (title, body, ms) {
+  function showPokeMessage(title, body, ms) {
     STATE.state.view = "MESSAGE";
     STATE.state.msgBox.title = title;
     STATE.state.msgBox.body = body;
@@ -47,5 +45,27 @@
     }
 
     if (global && global.APP_DRAW) global.APP_DRAW();
-  };
+  }
+
+  function handleMainMenuSelection(btn) {
+    if (btn === "LEFT") {
+      STATE.state.menuIdx =
+        (STATE.state.menuIdx - 1 + DATA.menuItems.length) %
+        DATA.menuItems.length;
+    }
+    if (btn === "RIGHT") {
+      STATE.state.menuIdx = (STATE.state.menuIdx + 1) % DATA.menuItems.length;
+    }
+    if (btn === "CENTER") {
+      STATE.state.view = DATA.menuItems[STATE.state.menuIdx];
+      console.log(STATE.state.view);
+      console.log(DATA.menuItems[STATE.state.menuIdx]);
+    }
+  }
+  exports.vibrate = vibrate;
+  exports.save = save;
+  exports.applySettings = applySettings;
+  exports.showPokeMessage = showPokeMessage;
+  exports.handleMainMenuSelection = handleMainMenuSelection;
+  //
 })(typeof exports !== "undefined" ? exports : (this.exports = {}));

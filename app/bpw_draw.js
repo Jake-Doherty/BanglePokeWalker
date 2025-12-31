@@ -97,7 +97,7 @@
     // Draw 4 grass patches
     for (let i = 0; i < 4; i++) {
       g.drawRect(20 + i * 35, 70, 50 + i * 35, 100);
-      if (state.battle.cursor === i)
+      if (state.radar.battle.cursor === i)
         g.fillRect(25 + i * 35, 105, 45 + i * 35, 110);
     }
   };
@@ -106,8 +106,12 @@
   // Pokéradar - Battle
   exports.drawRadarBattle = function (state, DATA, THEME) {
     // Enemy
-    g.setFont("6x8", 2).drawString("WILD " + state.battle.enemyID, 10, 10);
-    g.fillRect(10, 30, 10 + state.battle.enemyHP * 20, 35); // HP Bar
+    g.setFont("6x8", 2).drawString(
+      "WILD " + state.radar.battle.enemyID,
+      10,
+      10
+    );
+    g.fillRect(10, 30, 10 + state.radar.battle.enemyHP * 20, 35); // HP Bar
     //
     // Controls
     g.setFont("6x8", 2);
@@ -193,10 +197,17 @@
   // Home Screen Rendering
   exports.drawMain = function (state, DATA, THEME) {
     g.fillRect(0, 100, 176, 102);
+    E.setTimeZone(-8); // Sets the system to UTC-8 (PST)
+    let d = new Date();
+    let timeStr =
+      d.getHours() + ":" + d.getMinutes().toString().padStart(2, "0");
+    let dayStr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
+    g.setFont("4x6", 2); // Smaller font for the day
+    g.drawString(dayStr + " " + timeStr, 10, 155);
     let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
     let RouteImg = STORAGE.read(`Route_${state.route}.img`);
     if (PkImg && RouteImg) {
-      g.drawImage(RouteImg, 0, 0, {
+      g.drawImage(RouteImg, 0, 52, {
         scale: 2,
       });
       g.drawImage(PkImg, 45, 5, {

@@ -33,6 +33,10 @@
       case "CONNECT":
         DRAW.drawConnect(STATE.state, DATA, THEME);
         break;
+      case "RADAR":
+        GAME.startRadar();
+        draw();
+        break;
       case "RADAR_SEARCH":
         DRAW.drawRadarSearch(STATE.state, DATA, THEME);
         break;
@@ -48,9 +52,6 @@
       case "SETTINGS":
         DRAW.drawSettings(STATE.state, DATA, THEME);
         break;
-      case "ROUTE":
-        DRAW.drawRoute(STATE.state, DATA, THEME);
-        break;
       case "MESSAGE":
         DRAW.drawMessageBox(STATE.state, DATA, THEME);
         break;
@@ -58,9 +59,7 @@
         draw();
         return;
       default:
-        g.setFont("6x8", 3).centerString("OOPS!", 88, 40);
-        g.setFont("6x8", 2).centerString("Try reloading", 88, 60);
-        g.setFont("6x8", 2).centerString("the app", 88, 80);
+        console.log(STATE.state.view);
     }
 
     g.flip();
@@ -90,75 +89,26 @@
         if (btn === "CENTER") {
           STATE.state.view = "MENU";
         }
-        if (btn !== "CENTER") return; // Ignore other buttons
+        if (btn !== "CENTER") return; // Ignore other buttons for now will work emote logic here later with a function call
         break;
       case "MENU":
-        switch (btn) {
-          case "LEFT":
-            STATE.state.menuIdx =
-              (STATE.state.menuIdx - 1 + DATA.menuItems.length) %
-              DATA.menuItems.length;
-            break;
-          case "RIGHT":
-            STATE.state.menuIdx =
-              (STATE.state.menuIdx + 1) % DATA.menuItems.length;
-            break;
-          case "CENTER":
-            if (DATA.menuItems[STATE.state.menuIdx] === "DOWSING")
-              GAME.startDowsing();
-            else if (DATA.menuItems[STATE.state.menuIdx] === "RADAR") {
-              if (STATE.state.watts >= 10) {
-                STATE.state.watts -= 10;
-                STATE.state.view = "RADAR_SEARCH";
-              } else {
-                UTILS.showPokeMessage("ERROR", "Need 10W", 3000);
-              }
-            } else {
-              STATE.state.view = DATA.menuItems[STATE.state.menuIdx];
-            }
-            break;
+        UTILS.handleMainMenuSelection(btn);
+        break;
+      case "RADAR":
+        if (btn === "CENTER") {
+          STATE.state.view = "MAIN";
+        }
+        if (STATE.state.radar.rivalTrainerConnected) {
+          STATE.state.view = "RADAR_BATTLE";
+        } else {
+          STATE.state.view = "RADAR_SEARCH";
         }
         break;
       case "RADAR_SEARCH":
-        if (btn === "LEFT")
-          STATE.state.battle.cursor = Math.max(
-            0,
-            STATE.state.battle.cursor - 1
-          );
-        if (btn === "RIGHT")
-          STATE.state.battle.cursor = Math.min(
-            3,
-            STATE.state.battle.cursor + 1
-          );
-        if (btn === "CENTER") {
-          if (Math.random() > 0.5) STATE.state.view = "RADAR_BATTLE";
-          else {
-            UTILS.showPokeMessage("ERROR", "Empty...", 3000);
-            STATE.state.view = "MAIN";
-          }
-        }
+        GAME.handleRadarSearch(btn);
         break;
       case "RADAR_BATTLE":
-        if (btn === "LEFT") {
-          STATE.state.battle.enemyHP--;
-          if (STATE.state.battle.enemyHP <= 0) {
-            UTILS.showPokeMessage("ERROR", "Enemy Fled!", 3000);
-            STATE.state.view = "MAIN";
-          }
-        }
-        if (btn === "CENTER") {
-          if (STATE.state.battle.enemyHP === 1) {
-            UTILS.showPokeMessage("ERROR", "CAUGHT!", 3000);
-            STATE.state.inventory.push(STATE.state.battle.enemyID);
-            STATE.state.view = "MAIN";
-          } else {
-            UTILS.showPokeMessage("ERROR", "Escaped!", 3000);
-            STATE.state.view = "MAIN";
-          }
-        }
-        if (btn === "RIGHT") {
-          UTILS.showPokeMessage("ERROR", "Dodged!", 3000);
-        }
+        GAME.handleRadarBattle(btn);
         break;
       case "DOWSING":
         GAME.handleDowsing(btn);
@@ -195,9 +145,7 @@
             UTILS.showPokeMessage("ERROR!", "Try Again!");
           }
         }
-
         break;
-
       case "INVENTORY":
         if (btn === "LEFT") {
           STATE.state.scrollIdx = Math.max(0, STATE.state.scrollIdx - 1);
@@ -211,23 +159,24 @@
           STATE.state.view = "MAIN";
         }
         break;
-      case "ROUTE":
-        if (btn === "LEFT")
-          STATE.state.route =
-            DATA.routeNames[
-              (DATA.routeNames.indexOf(STATE.state.route) -
-                1 +
-                DATA.routeNames.length) %
-                DATA.routeNames.length
-            ];
-        if (btn === "RIGHT")
-          STATE.state.route =
-            DATA.routeNames[
-              (DATA.routeNames.indexOf(STATE.state.route) + 1) %
-                DATA.routeNames.length
-            ];
-        if (btn === "CENTER") STATE.state.view = "MAIN";
-        break;
+      // unused currently needs to be refactored into trainer card
+      // case "ROUTE":
+      //   if (btn === "LEFT")
+      //     STATE.state.route =
+      //       DATA.routeNames[
+      //         (DATA.routeNames.indexOf(STATE.state.route) -
+      //           1 +
+      //           DATA.routeNames.length) %
+      //           DATA.routeNames.length
+      //       ];
+      //   if (btn === "RIGHT")
+      //     STATE.state.route =
+      //       DATA.routeNames[
+      //         (DATA.routeNames.indexOf(STATE.state.route) + 1) %
+      //           DATA.routeNames.length
+      //       ];
+      //   if (btn === "CENTER") STATE.state.view = "MAIN";
+      //   break;
       case "MESSAGE":
         if (btn === "CENTER") {
           STATE.state.view = "MAIN";

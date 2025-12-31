@@ -29,11 +29,20 @@
       attempts: 0,
       msg: "",
     },
-    battle: {
-      enemyID: "157",
-      enemyHP: 3,
-      cursor: 0,
-      msg: "",
+    radar: {
+      rivalTrainerConnected: false,
+      search: {
+        frames: 0,
+        cursor: 0,
+      },
+      searching: false,
+      target: null,
+      battle: {
+        enemyID: "157",
+        enemyHP: 3,
+        cursor: 0,
+        msg: "",
+      },
     },
     msgBox: {
       title: "",
