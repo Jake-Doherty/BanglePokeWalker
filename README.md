@@ -121,3 +121,50 @@
 > > > ##### Golden Goal
 > > >
 > > > connect BanglePokeWalker with an (also yet to be made) emulator bridge to pair the watch with your favorite emulator to use the watch app to enhance and expand gameplay to be more genuine to the original experience.
+> >
+> > > ## BanglePokeWalker Development Roadmap
+> > >
+> > > I will link other README files and resources as they are created (if needed) for the different parts of the project here. Simply follow the links to find out where each part of the project is at any given time.
+> > >
+> > > There is an additional little side project in this repo to create an emulator for the espruino environment to run Bangle.js 2 apps on the PC in VSCode. This is not a priority for the BanglePokeWalker project but may be useful for development and testing. Would be a cool vscode extension as well if expanded to emulate more than just the Bangle.js 2.
+> > >
+> > > > From the root of the repository it can be found [here](./tools/emulator/) /tools/emulator and the README is [here](./tools/emulator/README.md)
+> > >
+> > > ### 1. Core Watch App (Bangle.js / JavaScript)
+> > >
+> > > - [ ] **Pedometer Engine**:
+> > >   - [ ] **PE**: Get steps data from `Bangle.on('step')`.
+> > >   - [ ] **PE**: Filter noise/movements to mimic Pokéwalker step counting.
+> > >   - [ ] **PE**: Test step accuracy with real-world walking.
+> > >   - [ ] **PE**: Explore path to send steps to phone for health apps.
+> > > - [ ] **Watt Accumulation**:
+> > >   - [ ] **WA**: Implement logic (e.g., 20 steps = 1 Watt).
+> > >   - [ ] **WA**: Correctly subtracts for using the Radar and Dowsing Machine.
+> > > - [ ] **1-Bit UI/UX**: Build 96x64 style LCD interface & animations._may just utilize full 176x176 to keep things sized nicely - will also need changes to the layout and potentially scaling_
+> > > - [ ] **Mini-games**: Logic for Poké Radar and Dowsing Machine.
+> > > - [ ] **Data Persistence**: Save steps/Watts/Pokémon ID to `Storage`.
+> > >
+> > > ### 2. Connectivity & Emulation Bridge
+> > >
+> > > - [ ] **BLE Comm Handler**: Send JSON packets via `Bluetooth.println()`.
+> > > - [ ] **Mobile/PC Bridge**: Setup Tasker/Gadgetbridge or Python Bleak script.
+> > > - [ ] **Save Injection**: Logic to edit `.sav` files for MelonDS/Citra/Drastic.
+> > > - [ ] **RAM Sync**: (Advanced) Live memory injection for steps.
+> > >
+> > > ### 3. Gameplay Logic (1:1 Features)
+> > >
+> > > - [ ] **Transfer In/Out**: BLE handshake to move Pokémon to/from watch.
+> > > - [ ] **Route System**: Route unlock logic based on total Watts.
+> > > - [ ] **Encounter Tables**: Route-specific Pokémon and Item pools.
+> > > - [ ] **Haptics**: `Bangle.buzz()` for "!" alert notifications.
+> > >
+> > > ### 4. Repo & Documentation
+> > >
+> > > - [ ] **App Loader Ready**: Finalize `metadata.json` and `app.js` structure.
+> > > - [ ] **Memory Map Doc**: Document HG/SS save offsets for sync.
+> > > - [ ] **README Update**: Add emulator setup and bridge instructions.
+> > >
+> > > ### 5. Optimization
+> > >
+> > > - [ ] **Power Management**: LCD timeout and low-power background polling.
+> > > - [ ] **Web Bluetooth App**: Web-based dashboard for easy "Stroll" starts.
