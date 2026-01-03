@@ -29,17 +29,14 @@
     }
     if (STATE.state.radar.battle.enemyHP <= 0) {
       UTILS.showPokeMessage("OH NO!", "Wild Pokemon Fainted!", 5000);
-      STATE.state.view = "MAIN";
     }
     if (btn === "CENTER") {
       if (STATE.state.radar.battle.enemyHP === 1) {
         UTILS.showPokeMessage("SUCCESS!", "Caught!", 5000);
         STATE.state.inventory.push(STATE.state.radar.battle.enemyID);
         UTILS.save();
-        STATE.state.view = "MAIN";
       } else {
         UTILS.showPokeMessage("ESCAPED!", "Wild Pokemon Escaped!", 5000);
-        STATE.state.view = "MAIN";
       }
     }
   }
