@@ -17,3 +17,6 @@ Thumbs.db
 
 # VS code
 .vscode
+
+# Unprocessed Assets
+assets/showdown
