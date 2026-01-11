@@ -5,7 +5,14 @@
   "main": "bangle_pokewalker.app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start converter": "node tools/image-converter/image-converter.js"
+    "start converter": "node tools/image-converter/image-converter.js",
+    "emu:start": "node tools/emulator/run_emulator_ui.js",
+    "emu:no-open": "node tools/emulator/run_emulator_ui.js --no-open",
+    "emu:detach": "node tools/emulator/run_emulator_ui.js --detach",
+    "emu:stop": "node tools/emulator/run_emulator_ui.js stop",
+    "emu:status": "node tools/emulator/run_emulator_ui.js status",
+    "emu:restart": "node tools/emulator/run_emulator_ui.js restart",
+    "emu:rotate-logs": "node tools/emulator/run_emulator_ui.js rotate-logs"
   },
   "keywords": [
     "pokewalker",
