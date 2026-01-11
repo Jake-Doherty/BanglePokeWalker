@@ -1,6 +1,7 @@
 (function (exports) {
   const STORAGE = require("Storage");
   const manifest = require("Storage").readJSON("pws.json");
+
   const myPalette = new Uint16Array([
     0xc676, 0xb615, 0xad73, 0xa552, 0x8cd0, 0x7c4e, 0x6bcd, 0x632b, 0x52ca,
     0x4248, 0x31e6, 0x2985, 0x1903, 0x10c2, 0x0861, 0x0000,
@@ -11,7 +12,7 @@
       g.drawString(s, x - g.stringWidth(s) / 2, y);
     };
 
-  exports.drawFromPack = function (id, frame) {
+  function drawFromPack(id, frame) {
     const info = manifest[id];
     if (!info) return;
 
@@ -19,28 +20,26 @@
     const buffer = require("Storage").read("pws.assets", info.o, info.l);
     const img = E.toArrayBuffer(buffer);
 
-    g.drawImage(img, 80, 45, {
+    g.drawImage(img, 88, 40, {
       palette: myPalette,
       transparent: 0,
       height: 64,
+      // width: 64,
       yOffset: frame * 64,
+      scale: 1.5,
     });
-  };
+  }
 
   // -------------------------------------------------------------
   // Icon Menu Rendering
-  exports.drawIconMenu = function (state, DATA, THEME) {
+  function drawIconMenu(state, DATA, THEME) {
     function drawSlctArrw(x) {
       g.fillPoly([x + 14, 60, x + 6, 50, x + 22, 50]);
     }
     // Menu Title Box
     g.drawRect(20, 10, 156, 40);
     //Chosen Menu name
-    g.setFont("6x8", 2).drawString(
-      DATA.menuItems[state.menuIdx],
-      88 - g.stringWidth(DATA.menuItems[state.menuIdx]) / 2,
-      18
-    );
+    g.setFont("6x8", 2).centerString(DATA.menuItems[state.menuIdx], 88, 18);
 
     drawSlctArrw(state.menuIdx * 30);
 
@@ -65,31 +64,31 @@
         }
       }
     });
-  };
+  }
 
   // -------------------------------------------------------------
   // Route Menu Rendering
-  exports.drawRoute = function (state, DATA, THEME) {
+  function drawRoute(state, DATA, THEME) {
     g.setFont("6x8", 3).centerString("ROUTE", 88, 15);
     g.setFont("6x8", 2).centerString(state.route, 88, 50);
     // Simple placeholder for route map
     g.drawRect(20, 70, 156, 130);
     g.setFont("4x6", 2).centerString("Map Coming Soon!", 88, 100);
-  };
+  }
 
   //--------------------------------------------------------------
   // Draw Message Box
-  exports.drawMessageBox = function (state, DATA, THEME) {
+  function drawMessageBox(state, DATA, THEME) {
     g.drawRect(10, 40, 166, 136); // Outer border
     g.drawRect(12, 42, 164, 134); // Inner border
     g.setFont("6x8", 3).centerString(state.msgBox.title, 88, 50);
     g.setFont("4x6", 2).centerString(state.msgBox.body, 88, 90);
     g.setFont("4x6", 2).centerString("--- PRESS CENTER ---", 88, 120);
-  };
+  }
 
   // -------------------------------------------------------------
   // Dowsing
-  exports.drawDowsing = function (state, DATA, THEME) {
+  function drawDowsing(state, DATA, THEME) {
     g.setFont("6x8", 3).drawString("DOWSING", 45, 15);
     g.setFont("6x8", 3).drawString(
       state.dowsing.msg || "Find the item!",
@@ -109,11 +108,11 @@
       50,
       155
     );
-  };
+  }
 
   // -------------------------------------------------------------
   // Pokéradar - Search
-  exports.drawRadarSearch = function (state, DATA, THEME) {
+  function drawRadarSearch(state, DATA, THEME) {
     g.setFont("6x8", 2).centerString("SEARCHING...", 88, 20);
     // Draw 4 grass patches
     for (let i = 0; i < 4; i++) {
@@ -121,11 +120,11 @@
       if (state.radar.battle.cursor === i)
         g.fillRect(25 + i * 35, 105, 45 + i * 35, 110);
     }
-  };
+  }
 
   // -------------------------------------------------------------
   // Pokéradar - Battle
-  exports.drawRadarBattle = function (state, DATA, THEME) {
+  function drawRadarBattle(state, DATA, THEME) {
     // Enemy
     g.setFont("6x8", 2).drawString(
       "WILD " + state.radar.battle.enemyID,
@@ -139,11 +138,11 @@
     g.drawString("ATK", 20, 150);
     g.drawString("BALL", 75, 150);
     g.drawString("EVADE", 130, 150);
-  };
+  }
 
   // -------------------------------------------------------------
   // Stats (Trainer Card)
-  exports.drawStats = function (state, DATA, THEME) {
+  function drawStats(state, DATA, THEME) {
     g.setFont("4x6", 3).centerString("TRAINER CARD", 88, 10);
     g.drawLine(10, 30, 166, 30);
 
@@ -159,11 +158,11 @@
 
     g.setFont("4x6", 2);
     g.centerString("L <--- DAYS ---> R", 88, 150);
-  };
+  }
 
   // -------------------------------------------------------------
   // Emulator Connect Screen
-  exports.drawConnect = function (state, DATA, THEME) {
+  function drawConnect(state, DATA, THEME) {
     g.setFont("6x8", 2).drawString("CONNECT", 45, 20);
     g.drawRect(40, 60, 136, 110);
     g.setFont("6x8", 2).drawString("HOLD CENTER", 50, 80);
@@ -173,11 +172,11 @@
     for (let i = 0; i < pulse; i++) {
       g.drawCircle(88, 140, 10 + i * 10);
     }
-  };
+  }
 
   // -------------------------------------------------------------
   // Inventory Screen
-  exports.drawInventory = function (state, DATA, THEME) {
+  function drawInventory(state, DATA, THEME) {
     g.setFont("6x8", 2).drawString("INVENTORY", 35, 10);
     g.drawLine(10, 30, 166, 30);
 
@@ -199,11 +198,11 @@
       }
     }
     g.setFont("6x8", 2).drawString("Press Center to Exit", 35, 155);
-  };
+  }
 
   // -------------------------------------------------------------
   // Settings Screen: Walker ↳ Bangle
-  exports.drawSettings = function (state, DATA, THEME) {
+  function drawSettings(state, DATA, THEME) {
     g.setFont("6x8", 3).centerString("SETTINGS", 88, 15);
     g.setFont("6x8", 2);
 
@@ -212,11 +211,11 @@
 
     g.setFont("6x8", 2).centerString("Press Side", 88, 140);
     g.setFont("6x8", 2).centerString("to Save", 88, 155);
-  };
+  }
 
   // -------------------------------------------------------------
   // Home Screen Rendering
-  exports.drawMain = function (state, DATA, THEME) {
+  function drawMain(state) {
     g.fillRect(0, 100, 176, 102);
 
     // clock
@@ -230,13 +229,13 @@
 
     // Poke and Route sprites
     // let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
-    let RouteImg = STORAGE.read(`Route_${state.route}.img`);
-    if (RouteImg) {
-      g.drawImage(RouteImg, 0, 52, {
-        scale: 2,
-      });
-      drawFromPack(state.pokeID, state.frame);
-    }
+    // let RouteImg = STORAGE.read(`Route_${state.route}.img`);
+    // if (RouteImg) {
+    //   g.drawImage(RouteImg, 0, 52, {
+    //     scale: 2,
+    //   });
+    // }
+    drawFromPack(state.pokeID, state.frame);
     // } else if (!RouteImg) {
     //   g.setFont("6x8", 2).drawString("No Poké", 0, 155);
     //   g.setFont("6x8", 2).drawString("Oops", 0, 140);
@@ -262,5 +261,17 @@
     );
     g.setFont("4x6", 2).drawString("STEPS", 170 - g.stringWidth("STEPS"), 140);
     g.setFont("6x8", 2).drawString(state.watts + "W", 10, 115);
-  };
+  }
+  exports.drawFromPack = drawFromPack;
+  exports.drawMain = drawMain;
+  exports.drawSettings = drawSettings;
+  exports.drawInventory = drawInventory;
+  exports.drawConnect = drawConnect;
+  exports.drawStats = drawStats;
+  exports.drawRadarBattle = drawRadarBattle;
+  exports.drawRadarSearch = drawRadarSearch;
+  exports.drawDowsing = drawDowsing;
+  exports.drawRoute = drawRoute;
+  exports.drawMessageBox = drawMessageBox;
+  exports.drawIconMenu = drawIconMenu;
 })(typeof exports !== "undefined" ? exports : (this.exports = {}));
