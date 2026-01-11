@@ -22,3 +22,22 @@ Notes:
 
 - These are developer tools only and are not used on the device.
 - You can modify or expand the stubs to emulate BLE, input events, or different hardware behaviors.
+
+Quick start (recommended npm scripts)
+
+From the repository root you can run the included npm scripts:
+
+```bash
+npm run emu:start       # start emulator and open browser
+npm run emu:no-open     # start emulator without opening browser
+npm run emu:detach      # start emulator in background (writes PID)
+npm run emu:stop        # stop detached instance using PID file
+npm run emu:status      # show PID/status
+npm run emu:restart     # restart detached instance
+npm run emu:rotate-logs # rotate logs and signal running process
+```
+
+Notes:
+
+- The runtime now prefers the Espruino API wrapper at `tools/emulator/espruino_api_wrapper.js` for timers, `setWatch`, `g`, `Bangle`, and `Storage` when present.
+- To run the emulator manually without npm scripts, run `node tools/emulator/run_emulator_ui.js`.
