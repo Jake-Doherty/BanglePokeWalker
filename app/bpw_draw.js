@@ -1,10 +1,31 @@
 (function (exports) {
   const STORAGE = require("Storage");
+  const manifest = require("Storage").readJSON("pws.json");
+  const myPalette = new Uint16Array([
+    0xc676, 0xb615, 0xad73, 0xa552, 0x8cd0, 0x7c4e, 0x6bcd, 0x632b, 0x52ca,
+    0x4248, 0x31e6, 0x2985, 0x1903, 0x10c2, 0x0861, 0x0000,
+  ]);
 
   if (!g.centerString)
     g.centerString = function (s, x, y) {
       g.drawString(s, x - g.stringWidth(s) / 2, y);
     };
+
+  exports.drawFromPack = function (id, frame) {
+    const info = manifest[id];
+    if (!info) return;
+
+    // We read ONLY the bytes for this specific Pokemon
+    const buffer = require("Storage").read("pws.assets", info.o, info.l);
+    const img = E.toArrayBuffer(buffer);
+
+    g.drawImage(img, 80, 45, {
+      palette: myPalette,
+      transparent: 0,
+      height: 64,
+      yOffset: frame * 64,
+    });
+  };
 
   // -------------------------------------------------------------
   // Icon Menu Rendering
@@ -197,6 +218,8 @@
   // Home Screen Rendering
   exports.drawMain = function (state, DATA, THEME) {
     g.fillRect(0, 100, 176, 102);
+
+    // clock
     E.setTimeZone(-8); // Sets the system to UTC-8 (PST)
     let d = new Date();
     let timeStr =
@@ -204,19 +227,33 @@
     let dayStr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
     g.setFont("4x6", 2); // Smaller font for the day
     g.drawString(dayStr + " " + timeStr, 10, 155);
-    let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
+
+    // Poke and Route sprites
+    // let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
     let RouteImg = STORAGE.read(`Route_${state.route}.img`);
-    if (PkImg && RouteImg) {
+    if (RouteImg) {
       g.drawImage(RouteImg, 0, 52, {
         scale: 2,
       });
-      g.drawImage(PkImg, 45, 5, {
-        scale: 2,
-      });
-    } else if (!PkImg && !RouteImg) {
-      g.setFont("6x8", 2).drawString("No Poké", 0, 155);
-      g.setFont("6x8", 2).drawString("Oops", 0, 140);
+      drawFromPack(state.pokeID, state.frame);
     }
+    // } else if (!RouteImg) {
+    //   g.setFont("6x8", 2).drawString("No Poké", 0, 155);
+    //   g.setFont("6x8", 2).drawString("Oops", 0, 140);
+    // }
+    // let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
+    // let RouteImg = STORAGE.read(`Route_${state.route}.img`);
+    // if (PkImg && RouteImg) {
+    //   g.drawImage(RouteImg, 0, 52, {
+    //     scale: 2,
+    //   });
+    //   g.drawImage(PkImg, 45, 5, {
+    //     scale: 2,
+    //   });
+    // } else if (!PkImg && !RouteImg) {
+    //   g.setFont("6x8", 2).drawString("No Poké", 0, 155);
+    //   g.setFont("6x8", 2).drawString("Oops", 0, 140);
+    // }
 
     g.setFont("6x8", 3).drawString(
       state.steps.toString(),
