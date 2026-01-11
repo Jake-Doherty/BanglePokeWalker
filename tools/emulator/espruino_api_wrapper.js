@@ -428,6 +428,7 @@ module.exports = function setupEspruinoAPI(opts) {
       return s ? charWidthForFont(f) * String(s).length : 0;
     },
     drawImage: function (img, x, y, opts) {
+      // If a single object argument was passed (g.drawImage({img:...,x:...,opts:...})) normalize
       if (
         arguments.length === 1 &&
         img &&
@@ -436,21 +437,98 @@ module.exports = function setupEspruinoAPI(opts) {
         !(img instanceof ArrayBuffer)
       ) {
         const o = img;
-        return sendEvent({
-          cmd: "drawImage",
-          img: o.img || o,
-          x: clipCoord(toNum(o.x, 0)),
-          y: clipCoord(toNum(o.y, 0)),
-          opts: o.opts || o.options || {},
-        });
+        img = o.img || o;
+        x = toNum(o.x, 0);
+        y = toNum(o.y, 0);
+        opts = o.opts || o.options || {};
       }
-      const X = toNum(x, 0),
-        Y = toNum(y, 0);
+
+      const X = clipCoord(toNum(x, 0));
+      const Y = clipCoord(toNum(y, 0));
+
+      // If image is binary (ArrayBuffer or TypedArray), encode as base64 and convert palette
+      try {
+        // detect ArrayBuffer or view
+        let buf = null;
+        if (img && img instanceof ArrayBuffer) buf = Buffer.from(img);
+        else if (ArrayBuffer.isView(img))
+          buf = Buffer.from(
+            img.buffer,
+            img.byteOffset || 0,
+            img.byteLength || img.length
+          );
+
+        if (buf) {
+          const b64 = buf.toString("base64");
+          // prepare palette if provided (convert uint16 RGB565 -> #rrggbb)
+          let pal = null;
+          if (opts && opts.palette) {
+            pal = [];
+            let p = opts.palette;
+            // handle typed arrays or plain arrays
+            if (Array.isArray(p)) {
+              for (let v of p) pal.push(rgb565ToHex(v));
+            } else if (ArrayBuffer.isView(p)) {
+              const dv = new Uint16Array(
+                p.buffer,
+                p.byteOffset || 0,
+                Math.floor(p.byteLength / 2)
+              );
+              for (let i = 0; i < dv.length; i++) pal.push(rgb565ToHex(dv[i]));
+            }
+          }
+          // Try to infer width from opts.height and assumed frame count (default 2)
+          let inferredWidth = 64;
+          if (opts && opts.width) inferredWidth = opts.width;
+          else if (opts && opts.height && opts.height > 0) {
+            const frames = opts.frames || 2;
+            const possible = Math.floor(buf.length / (opts.height * frames));
+            if (possible >= 8) inferredWidth = possible;
+          }
+          const payload = {
+            type: "indexed",
+            b64: b64,
+            len: buf.length,
+            width: inferredWidth,
+            palette: pal,
+            meta: {
+              transparent: opts && opts.transparent,
+              height: opts && opts.height,
+              yOffset: opts && opts.yOffset,
+              scale: opts && opts.scale,
+            },
+          };
+          try {
+            console.log(
+              "[g.drawImage:indexed] len=%d width=%d x=%d y=%d opts=%j pal=%d",
+              buf.length,
+              inferredWidth,
+              X,
+              Y,
+              opts,
+              pal ? pal.length : 0
+            );
+            if (pal && pal.length) {
+              console.log(" palette sample:", pal.slice(0, 8));
+            }
+          } catch (e) {}
+          return sendEvent({
+            cmd: "drawImage",
+            img: payload,
+            x: X,
+            y: Y,
+            opts: {},
+          });
+        }
+      } catch (e) {
+        // fallthrough to default sender
+      }
+
       return sendEvent({
         cmd: "drawImage",
         img: img,
-        x: clipCoord(X),
-        y: clipCoord(Y),
+        x: X,
+        y: Y,
         opts: opts || {},
       });
     },
@@ -618,3 +696,19 @@ module.exports = function setupEspruinoAPI(opts) {
     clearTimerShim: clearTimerShim,
   };
 };
+
+function rgb565ToHex(v) {
+  if (typeof v !== "number") return "#000000";
+  const r = (v >> 11) & 0x1f;
+  const g = (v >> 5) & 0x3f;
+  const b = v & 0x1f;
+  const R = Math.round((r / 31) * 255);
+  const G = Math.round((g / 63) * 255);
+  const B = Math.round((b / 31) * 255);
+  return (
+    "#" +
+    R.toString(16).padStart(2, "0") +
+    G.toString(16).padStart(2, "0") +
+    B.toString(16).padStart(2, "0")
+  );
+}
