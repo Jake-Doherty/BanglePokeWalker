@@ -3,6 +3,10 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
+const setupEspruinoAPI = require(path.join(
+  __dirname,
+  "espruino_api_wrapper.js"
+));
 
 const UI_DIR = path.join(__dirname, "ui");
 const PORT = 3000;
@@ -11,6 +15,7 @@ const PID_FILE = path.join(__dirname, "/logs/emulator.pid");
 const LOG_FILE = path.join(__dirname, "/logs/emulator.log");
 
 let sseClients = [];
+let wrapperCleanup = null;
 
 // Early CLI: support `stop` and `status`
 if (process.argv[2] === "stop") {
@@ -116,6 +121,15 @@ function sendEvent(obj) {
       res.write(data);
     } catch (e) {}
   });
+}
+
+// Initialize optional Espruino API wrapper (scaffold)
+let espruinoAPI = null;
+try {
+  espruinoAPI = setupEspruinoAPI({ sendEvent: sendEvent });
+  if (espruinoAPI && typeof espruinoAPI.cleanup === 'function') wrapperCleanup = espruinoAPI.cleanup;
+} catch (e) {
+  console.error('Failed to init Espruino API wrapper:', e);
 }
 
 function handleInput(obj) {
@@ -305,6 +319,53 @@ function writePid() {
 }
 
 function cleanupAndExit(code) {
+  // Run wrapper cleanup if present
+  try {
+    if (typeof wrapperCleanup === "function") wrapperCleanup();
+  } catch (e) {}
+
+  // Close all SSE client connections
+  try {
+    sseClients.forEach((res) => {
+      try {
+        res.write("event: close\ndata: {}\n\n");
+        res.end();
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  // Close HTTP server if running, then exit once closed
+  try {
+    if (server && typeof server.close === "function") {
+      // Give server up to 3s to close gracefully
+      let exited = false;
+      server.close(() => {
+        try {
+          if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
+        } catch (e) {}
+        try {
+          if (logStream) logStream.end();
+        } catch (e) {}
+        if (!exited) {
+          exited = true;
+          process.exit(code || 0);
+        }
+      });
+      setTimeout(() => {
+        if (!exited) {
+          try {
+            if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
+          } catch (e) {}
+          try {
+            if (logStream) logStream.end();
+          } catch (e) {}
+          process.exit(code || 0);
+        }
+      }, 3000).unref();
+      return;
+    }
+  } catch (e) {}
+
   try {
     if (fs.existsSync(PID_FILE)) fs.unlinkSync(PID_FILE);
   } catch (e) {}
@@ -315,12 +376,22 @@ function cleanupAndExit(code) {
 }
 
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down");
-  server.close(() => cleanupAndExit(0));
+  try {
+    fs.writeSync(1, "SIGTERM received, cleaning up\n");
+  } catch (e) {}
+  cleanupAndExit(0);
 });
+
 process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down");
-  server.close(() => cleanupAndExit(0));
+  try {
+    fs.writeSync(1, "SIGINT received, cleaning up\n");
+  } catch (e) {}
+  cleanupAndExit(0);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err && err.stack ? err.stack : err);
+  cleanupAndExit(1);
 });
 
 // Start logging and write pid when server is ready
@@ -344,6 +415,34 @@ global.sendToUI = sendEvent;
 
 const watches = [];
 const listeners = {};
+
+// If wrapper supports binding, bind host watch/listener arrays so both sides share events
+try {
+  if (espruinoAPI && typeof espruinoAPI.bind === 'function') espruinoAPI.bind({ watches: watches, listeners: listeners });
+} catch (e) {}
+
+global.E = {
+  // Converts a string (from storage_stub) into an ArrayBuffer
+  toArrayBuffer: function (str) {
+    if (typeof str !== "string") return str;
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  },
+
+  // Stub to prevent "not a function" errors
+  setTimeZone: function (v) {
+    console.log("[E.setTimeZone] set to:", v);
+  },
+
+  // You might also need this one eventually for Pokewalker logic:
+  getTemperature: function () {
+    return 25;
+  },
+};
 
 // Basic g shim with common drawing primitives used by the app
 global.g = (() => {
@@ -395,6 +494,14 @@ global.showPokeMessage = function (title, body, ms) {
   sendEvent({ cmd: "message", title, body, ms });
 };
 
+// If espruinoAPI provided richer `g` or `Bangle` implementations, prefer those
+try {
+  if (espruinoAPI && espruinoAPI.g) global.g = espruinoAPI.g;
+  if (espruinoAPI && espruinoAPI.Bangle) global.Bangle = Object.assign(global.Bangle || {}, espruinoAPI.Bangle);
+} catch (e) {
+  console.error('Failed to apply espruinoAPI globals:', e);
+}
+
 // Extend Bangle shim with brightness API used by the app
 if (!global.Bangle) global.Bangle = {};
 global.Bangle.setLCDBrightness =
@@ -404,12 +511,14 @@ global.Bangle.setLCDBrightness =
   };
 
 global.setWatch = (cb, btn, opts) => {
+  if (espruinoAPI && typeof espruinoAPI.setWatch === 'function') return espruinoAPI.setWatch(cb, btn, opts);
   watches.push({ cb, btn, opts });
   console.log("[setWatch] registered", btn, opts);
 };
 
 global.BTN1 = "BTN1";
 global.Bangle.on = (ev, cb) => {
+  if (espruinoAPI && espruinoAPI.Bangle && typeof espruinoAPI.Bangle.on === 'function') return espruinoAPI.Bangle.on(ev, cb);
   listeners[ev] = listeners[ev] || [];
   listeners[ev].push(cb);
   console.log("[Bangle] on", ev);
@@ -421,7 +530,8 @@ global.Bangle.buzz = (t, v) => sendEvent({ cmd: "buzz", t, v });
 // Custom require that loads app/ modules into the VM and keeps nested requires routed here.
 const moduleCache = {};
 global.require = function (name) {
-  const map = { Storage: path.join(__dirname, "storage_stub.js") };
+  // Allow the espruinoAPI to provide the Storage shim path if available
+  const map = { Storage: (espruinoAPI && typeof espruinoAPI.storagePath === 'function') ? espruinoAPI.storagePath(__dirname) : path.join(__dirname, "storage_stub.js") };
   if (map[name]) return require(map[name]);
 
   // Resolve to app folder (two levels up)
@@ -460,15 +570,16 @@ try {
   const sandbox = {
     console: console,
     require: global.require,
-    setInterval: setInterval,
-    setTimeout: setTimeout,
-    clearTimeout: clearTimeout,
-    clearInterval: clearInterval,
+    E: global.E,
+    setInterval: (espruinoAPI && typeof espruinoAPI.setIntervalShim === 'function') ? espruinoAPI.setIntervalShim : setInterval,
+    setTimeout: (espruinoAPI && typeof espruinoAPI.setTimeoutShim === 'function') ? espruinoAPI.setTimeoutShim : setTimeout,
+    clearTimeout: (espruinoAPI && typeof espruinoAPI.clearTimerShim === 'function') ? espruinoAPI.clearTimerShim : clearTimeout,
+    clearInterval: (espruinoAPI && typeof espruinoAPI.clearTimerShim === 'function') ? espruinoAPI.clearTimerShim : clearInterval,
     global: global,
     exports: {},
     module: { exports: {} },
     // Emulator globals expected by the app
-    setWatch: global.setWatch,
+    setWatch: (espruinoAPI && typeof espruinoAPI.setWatch === 'function') ? espruinoAPI.setWatch : global.setWatch,
     g: global.g,
     Bangle: global.Bangle,
     BTN1: global.BTN1,
