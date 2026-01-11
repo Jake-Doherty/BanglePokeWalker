@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bangle Emulator UI</title>
+  <style>
+    body { font-family: sans-serif; display:flex; gap:16px; padding:12px }
+    #left { display:flex; flex-direction:column; gap:8px }
+    canvas { background:#222; image-rendering: pixelated; }
+    button { padding:8px 12px }
+    #log { width:360px; height:360px; overflow:auto; background:#111; color:#bfbfbf; padding:8px }
+  </style>
+<head>
+<body>
+  <div id="left">
+    <canvas id="screen" width="176" height="176"></canvas>
+    <div>
+      <button id="leftBtn">LEFT</button>
+      <button id="centerBtn">CENTER</button>
+      <button id="rightBtn">RIGHT</button>
+    </div>
+  </div>
+  <div id="log"></div>
+  <script src="client.js"></script>
+</body>
+</html>

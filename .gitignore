@@ -1,0 +1,24 @@
+# Ignore generated pokewalker state and emulator runtime files
+pokewalker.json
+data/pokewalker.json
+
+# Emulator runtime files
+tools/emulator/logs/
+tools/emulator/emulator.pid
+tmp_emu_storage/
+
+# Node modules (if any) and OS files
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Github folder conaining copilot intstructions etc...
+.github/
+
+# VS code
+.vscode
+
+
+# Unready Assets
+assets/showdown
+assets/dist

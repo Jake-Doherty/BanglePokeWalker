@@ -1,0 +1,6 @@
+[submodule "docs~"]
+	path = docs~
+	url = https://github.com/Jake-Doherty/EspruinoDocs.git
+[submodule "converter~"]
+	path = converter~
+	url = https://github.com/Jake-Doherty/Sprite-Converter.git
