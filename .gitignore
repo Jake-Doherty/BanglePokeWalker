@@ -5,7 +5,7 @@ data/pokewalker.json
 # Emulator runtime files
 tools/emulator/logs/
 tools/emulator/emulator.pid
-tools/emulator/tmp_emu_storage/
+tmp_emu_storage/
 
 # Node modules (if any) and OS files
 node_modules/
