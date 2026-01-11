@@ -20,7 +20,7 @@
       return true;
     } catch (e) {
       console.log(e);
-      showPokeMessage("ERROR!", "Try Again!", 3000);
+      showPokeMessage("ERROR!", "Try Again!");
     }
   }
 

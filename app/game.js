@@ -5,7 +5,7 @@
   function startRadar() {
     console.log("are you there");
     if (STATE.state.watts < 10) {
-      UTILS.showPokeMessage("Go Walk!", "Need 10W", 5000);
+      UTILS.showPokeMessage("Go Walk!", "Need 10W");
       return;
     }
     if (STATE.state.rivalTrainerConnected) {
@@ -18,7 +18,7 @@
       STATE.state.radar.searching = true;
       STATE.state.radar.target = Math.floor(Math.random() * 3);
     } catch (e) {
-      UTILS.showPokeMessage("ERROR", "Failed to start POKéRADAR", 5000);
+      UTILS.showPokeMessage("ERROR", "Failed to start POKéRADAR");
     }
   }
 
@@ -28,18 +28,15 @@
       STATE.state.radar.battle.enemyHP--;
     }
     if (STATE.state.radar.battle.enemyHP <= 0) {
-      UTILS.showPokeMessage("OH NO!", "Wild Pokemon Fainted!", 5000);
-      STATE.state.view = "MAIN";
+      UTILS.showPokeMessage("OH NO!", "Wild Pokemon Fainted!");
     }
     if (btn === "CENTER") {
       if (STATE.state.radar.battle.enemyHP === 1) {
-        UTILS.showPokeMessage("SUCCESS!", "Caught!", 5000);
+        UTILS.showPokeMessage("SUCCESS!", "Caught!");
         STATE.state.inventory.push(STATE.state.radar.battle.enemyID);
         UTILS.save();
-        STATE.state.view = "MAIN";
       } else {
-        UTILS.showPokeMessage("ESCAPED!", "Wild Pokemon Escaped!", 5000);
-        STATE.state.view = "MAIN";
+        UTILS.showPokeMessage("ESCAPED!", "Wild Pokemon Escaped!");
       }
     }
   }
@@ -57,15 +54,14 @@
         STATE.state.view = "RADAR_BATTLE";
         STATE.state.radar.battle.enemyHP = 3;
       } else {
-        UTILS.showPokeMessage("MISS!", "No Pokemon Found!", 5000);
-        STATE.state.view = "MAIN";
+        UTILS.showPokeMessage("MISS!", "No Pokemon Found!");
       }
     }
   }
 
   function startDowsing() {
     if (STATE.state.watts < 3) {
-      UTILS.showPokeMessage("Go Walk!", "Need 3W", 3000);
+      UTILS.showPokeMessage("Go Walk!", "Need 3W");
       return;
     }
     STATE.state.watts -= 3;
@@ -84,13 +80,11 @@
     if (btn === "CENTER") {
       STATE.state.dowsing.attempts++;
       if (STATE.state.dowsing.cursor === STATE.state.dowsing.target) {
-        UTILS.showPokeMessage("SUCCESS!", "Found Item!", 3000);
+        UTILS.showPokeMessage("SUCCESS!", "Found Item!");
         STATE.state.items.push("Rare Candy"); // Placeholder item
         UTILS.save();
-        STATE.state.view = "MAIN";
       } else if (STATE.state.dowsing.attempts >= 2) {
         UTILS.showPokeMessage("ERROR", "It fled...");
-        STATE.state.view = "MAIN";
       } else {
         // Hot or Cold Logic
         let diff = Math.abs(
