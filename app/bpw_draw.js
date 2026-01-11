@@ -26,7 +26,8 @@
       height: 64,
       // width: 64,
       yOffset: frame * 64,
-      scale: 1.5,
+
+      scale: 1,
     });
   }
 
