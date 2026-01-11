@@ -1,6 +1,5 @@
 (function (exports) {
   const STORAGE = require("Storage");
-  const manifest = require("Storage").readJSON("pws.json");
 
   const myPalette = new Uint16Array([
     0xc676, 0xb615, 0xad73, 0xa552, 0x8cd0, 0x7c4e, 0x6bcd, 0x632b, 0x52ca,
@@ -12,22 +11,39 @@
       g.drawString(s, x - g.stringWidth(s) / 2, y);
     };
 
+  /**
+   * draws pokemon from binary asset pack
+   * @param {int} id - National Dex ID (1-1025)
+   * @param {int} frame - 0 or 1
+   */
   function drawFromPack(id, frame) {
-    const info = manifest[id];
-    if (!info) return;
+    if (id < 1 || id > 1025) return;
+    // 1. Calculate the position in the 8-byte-per-entry index file
+    // Each ID has 2 frames. Each entry is 8 bytes (4 offset, 4 length)
+    const entryPos = (id * 2 + frame) * 8;
 
-    // We read ONLY the bytes for this specific Pokemon
-    const buffer = require("Storage").read("pws.assets", info.o, info.l);
+    // 2. Read the 8-byte index entry from storage
+    const indexData = STORAGE.read("pws.index", entryPos, 8);
+    if (!indexData) return;
+
+    // 3. Extract offset and length using DataView
+    const view = new DataView(E.toArrayBuffer(indexData));
+    const offset = view.getUint32(0, true); // true = Little Endian
+    const length = view.getUint32(4, true);
+
+    if (length === 0) return; // No data for this ID/frame
+
+    // 4. Read ONLY the specific sprite data from the assets file
+    const buffer = STORAGE.read("pws.assets", offset, length);
     const img = E.toArrayBuffer(buffer);
 
-    g.drawImage(img, 88, 40, {
+    // 5. Draw!
+    // Note: yOffset and height are removed because the converter
+    // now saves individual 64x64 frames with their own headers.
+    g.drawImage(img, 120, 5, {
       palette: myPalette,
       transparent: 0,
-      height: 64,
-      // width: 64,
-      yOffset: frame * 64,
-
-      scale: 1,
+      scale: 1.5,
     });
   }
 
@@ -227,33 +243,7 @@
     let dayStr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
     g.setFont("4x6", 2); // Smaller font for the day
     g.drawString(dayStr + " " + timeStr, 10, 155);
-
-    // Poke and Route sprites
-    // let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
-    // let RouteImg = STORAGE.read(`Route_${state.route}.img`);
-    // if (RouteImg) {
-    //   g.drawImage(RouteImg, 0, 52, {
-    //     scale: 2,
-    //   });
-    // }
     drawFromPack(state.pokeID, state.frame);
-    // } else if (!RouteImg) {
-    //   g.setFont("6x8", 2).drawString("No Poké", 0, 155);
-    //   g.setFont("6x8", 2).drawString("Oops", 0, 140);
-    // }
-    // let PkImg = STORAGE.read(`pw-${state.pokeID}-${state.frame}.img`);
-    // let RouteImg = STORAGE.read(`Route_${state.route}.img`);
-    // if (PkImg && RouteImg) {
-    //   g.drawImage(RouteImg, 0, 52, {
-    //     scale: 2,
-    //   });
-    //   g.drawImage(PkImg, 45, 5, {
-    //     scale: 2,
-    //   });
-    // } else if (!PkImg && !RouteImg) {
-    //   g.setFont("6x8", 2).drawString("No Poké", 0, 155);
-    //   g.setFont("6x8", 2).drawString("Oops", 0, 140);
-    // }
 
     g.setFont("6x8", 3).drawString(
       state.steps.toString(),
