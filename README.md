@@ -1,37 +1,52 @@
 # BanglePokeWalker
 
-> > A fan made attempt at a \*faithful recreation of the PokeWalker on the Bangle.js 2 hackable smartwatch
+> > ## A fan made attempt at a \*faithful recreation of the PokeWalker on the Bangle.js 2 hackable smartwatch
+> >
+> > > As this has been designed from the start to work on the Bangle.js 2 I've forked the official Espruino docs and included them in this repo as a submodule. This will help with making sure tests and stubs are accurate to the Espruino environment and the firmware version being used. If you're using copilot add it to your '`copilot-instructions.md`' in your '`.github`' folder in order to get better help from copilot surrounding specific syntax and formatting with Espruino while working on the code. The docs repo [contents can be found here](./docs~/). Make sure you [meet the requirements](./docs~/README.md/#build-requirements) and follow the [instructions in its README](./docs~/README.md/#build-process) if you want to build it and also serve the docs locally to view in your browser.
+> > >
+> > > When cloning this repo make sure to use the command
+> > > `--recurse-submodules`
+> > > in order to include the docs.
+> > >
+> > > The full command should be:
+> > >
+> > > `git clone --recurse-submodules https://github.com/Jake-Doherty/BanglePokeWalker.git`
 >
 > > ## MVP for Watch
 > >
-> > - Clock
-> > - Alarm
-> > - Calander
-> > - On
-> > - Off
-> > - Settings
-> >   - Brightness
-> >   - Contrast
-> >   - Theme
-> >     - Light
-> >     - Dark
-> >   - Volume (Buzz level on Bangle.js 2)
+> > 1. Clock
+> > 2. Alarm
+> > 3. Calender
+> > 4. Power
+> >    - On
+> >    - Off
+> > 5. Settings
+> >    - Clock
+> >      - DST
+> >      - 12H or 24H
+> >    - Screen
+> >      - Brightness
+> >      - Contrast
+> >      - Theme
+> >        - Light
+> >        - Dark
+> >    - Volume (Buzz level on Bangle.js 2)
 >
 > > ## MVP for BanglePokeWalker
 > >
-> > > ### Contents
+> > > ### Contents for Walker
 > > >
-> > > - Home
-> > > - Menu
-> > > - Radar
-> > > - Dowsing
-> > > - Trainer Card
-> > > - Settings
+> > > 1. [Home](#home-screen)
+> > > 2. [Menu](#menu-screen)
+> > > 3. [Radar](#pokeradar)
+> > > 4. [Dowsing](#dowsing-machine)
+> > > 5. [Trainer Card](#trainer-card)
+> > > 6. [Settings](#settings)
 > >
 > > > #### Home screen
 > > >
 > > > - Main screen for app
-> > > - Pressing the side button on the watcch (hereon equivilent to 'CENTER' on the PokeWalker) opens 'Main Menu'
+> > > - Pressing the side button on the watch (hereon equivalent to 'CENTER' on the PokeWalker) opens 'Main Menu'
 > > > - Touching and holding the right and left hand sides of the screen puts the Walker in "Sleep Mode"
 > > > - Displaying chosen or loaded Pokemon sprite
 > > > - The Route sprite for the route selected by the user in the route menu
@@ -108,7 +123,7 @@
 > > >
 > > > - Displays two selections
 > > > - Items Icon
-> > >   - Clicking shows a list of up to 5 items the player has found while using the Dowsing Machine on the Pokewalker
+> > >   - Clicking shows a list of up to 5 items the player has found while using the Dowsing Machine on the Pokéwalker
 > > > - Pokemon Icon
 > > >   - Clicking shows a list of up to 3 Pokemon the player has found while using the POKeRADAR
 > >

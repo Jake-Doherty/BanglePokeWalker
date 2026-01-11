@@ -18,6 +18,7 @@ Thumbs.db
 # VS code
 .vscode
 
+
 # Unready Assets
 assets/showdown
 assets/dist

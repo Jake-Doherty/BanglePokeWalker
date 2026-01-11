@@ -60,6 +60,8 @@
 
     drawSlctArrw(state.menuIdx * 30);
 
+    drawSlctArrw(state.menuIdx * 30);
+
     // Draw Arrows
     g.fillPoly([10, 25, 18, 15, 18, 35]); // Left
     g.fillPoly([166, 25, 158, 15, 158, 35]); // Right
