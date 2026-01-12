@@ -1,0 +1,30 @@
+{
+  "name": "banglepokewalker",
+  "version": "1.0.0",
+  "description": "A fan made pokewalker firmware built from the ground up to 'talk' with your favorite emulator running your legitimately obtained personally owned ROM of HGSS",
+  "main": "bangle_pokewalker.app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start converter": "node converter~/image-converter/image-converter.js",
+    "emu:start": "node tools/emulator/run_emulator_ui.js",
+    "emu:no-open": "node tools/emulator/run_emulator_ui.js --no-open",
+    "emu:detach": "node tools/emulator/run_emulator_ui.js --detach",
+    "emu:stop": "node tools/emulator/run_emulator_ui.js stop",
+    "emu:status": "node tools/emulator/run_emulator_ui.js status",
+    "emu:restart": "node tools/emulator/run_emulator_ui.js restart",
+    "emu:rotate-logs": "node tools/emulator/run_emulator_ui.js rotate-logs"
+  },
+  "keywords": [
+    "pokewalker",
+    "watch",
+    "pedometer",
+    "game peripheral",
+    "fan creation",
+    "open source"
+  ],
+  "author": "Jacob Doherty",
+  "license": "ISC",
+  "dependencies": {
+    "sharp": "^0.34.5"
+  }
+}
