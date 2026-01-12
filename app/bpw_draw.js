@@ -40,7 +40,7 @@
     // 5. Draw!
     // Note: yOffset and height are removed because the converter
     // now saves individual 64x64 frames with their own headers.
-    g.drawImage(img, 120, 5, {
+    g.drawImage(img, 80, 5, {
       palette: myPalette,
       transparent: 0,
       scale: 1.5,
@@ -245,6 +245,7 @@
     let dayStr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
     g.setFont("4x6", 2); // Smaller font for the day
     g.drawString(dayStr + " " + timeStr, 10, 155);
+    // Draw Pokémon
     drawFromPack(state.pokeID, state.frame);
 
     g.setFont("6x8", 3).drawString(
