@@ -2,8 +2,14 @@
   const STORAGE = require("Storage");
 
   const myPalette = new Uint16Array([
-    0x3989, 0x499a, 0x528c, 0x5aad, 0x732f, 0x83b1, 0x9432, 0x9cd4, 0xad35,
-    0xbdb7, 0xce19, 0xd67a, 0xe6fc, 0xef3d, 0xf79e, 0xffff,
+    0x0000, // 0: Transparent
+    0xef7d, // 1: Very light greenish (almost white)
+    0xce59, // 2: Light green
+    0xad55, // 3: Medium-light green
+    0x8c51, // 4: Medium green
+    0x6b4d, // 5: Medium-dark green
+    0x4a49, // 6: Dark green
+    0x2945, // 7: Very dark green
   ]);
 
   if (!g.centerString)
