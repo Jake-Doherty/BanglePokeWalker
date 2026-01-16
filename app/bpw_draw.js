@@ -35,32 +35,42 @@
 
       // Quick existence check for this part set
       const exists = STORAGE.read(partIndexName, 0, 1);
-      if (!exists) break; // no more parts
+      if (!exists) break;
 
       // Read the 8-byte index entry from this part index
       const idxEntry = STORAGE.read(partIndexName, entryPos, 8);
-      if (!idxEntry) continue; // entry not present in this part
+      if (!idxEntry) continue;
 
       const view = new DataView(E.toArrayBuffer(idxEntry));
       const offset = view.getUint32(0, true);
       const length = view.getUint32(4, true);
 
-      if (length === 0) continue; // this part doesn't contain the sprite
+      if (length === 0) continue;
 
-      // Read only the specific sprite bytes from the matching part assets
       const buffer = STORAGE.read(partAssetsName, offset, length);
       if (!buffer) return;
-      const img = E.toArrayBuffer(buffer);
 
-      g.drawImage(img, 80, 5, {
+      // Read and validate header
+      const arr = new Uint8Array(E.toArrayBuffer(buffer));
+      const width = arr[0];
+      const height = arr[1];
+      const bpp = arr[2];
+
+      // Debug: validate sprite format
+      if (width !== 64 || height !== 64 || bpp !== 3) {
+        console.log(
+          `Warning: Unexpected sprite format for ID ${id}: ${width}x${height}, ${bpp}bpp`
+        );
+      }
+
+      // Option 1: Let g.drawImage parse the header (simplest)
+      g.drawImage(E.toArrayBuffer(buffer), 80, 5, {
         palette: myPalette,
         transparent: 0,
         scale: 1.5,
       });
       return;
     }
-
-    return;
   }
 
   // -------------------------------------------------------------
