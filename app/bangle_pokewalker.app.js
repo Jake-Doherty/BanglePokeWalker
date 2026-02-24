@@ -89,7 +89,16 @@
         if (btn === "CENTER") {
           STATE.state.view = "MENU";
         }
-        if (btn !== "CENTER") return; // Ignore other buttons for now will work emote logic here later with a function call
+        // if (btn !== "CENTER") return;
+        if (btn === "LEFT") {
+          STATE.state.pokeID--;
+          draw();
+        }
+        if (btn === "RIGHT") {
+          STATE.state.pokeID++;
+          draw();
+        }
+
         break;
       case "MENU":
         UTILS.handleMainMenuSelection(btn);

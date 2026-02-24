@@ -2,8 +2,14 @@
   const STORAGE = require("Storage");
 
   const myPalette = new Uint16Array([
-    0xc676, 0xb615, 0xad73, 0xa552, 0x8cd0, 0x7c4e, 0x6bcd, 0x632b, 0x52ca,
-    0x4248, 0x31e6, 0x2985, 0x1903, 0x10c2, 0x0861, 0x0000,
+    0x0000, // 0: Transparent
+    0xef7d, // 1: Very light greenish (almost white)
+    0xce59, // 2: Light green
+    0xad55, // 3: Medium-light green
+    0x8c51, // 4: Medium green
+    0x6b4d, // 5: Medium-dark green
+    0x4a49, // 6: Dark green
+    0x2945, // 7: Very dark green
   ]);
 
   if (!g.centerString)
@@ -12,39 +18,59 @@
     };
 
   /**
-   * draws pokemon from binary asset pack
+   * draws pokemon from binary asset packs
    * @param {int} id - National Dex ID (1-1025)
    * @param {int} frame - 0 or 1
    */
   function drawFromPack(id, frame) {
     if (id < 1 || id > 1025) return;
-    // 1. Calculate the position in the 8-byte-per-entry index file
-    // Each ID has 2 frames. Each entry is 8 bytes (4 offset, 4 length)
+    // Each ID has 2 frames. Each index entry is 8 bytes (4 offset, 4 length)
     const entryPos = (id * 2 + frame) * 8;
 
-    // 2. Read the 8-byte index entry from storage
-    const indexData = STORAGE.read("pws.index", entryPos, 8);
-    if (!indexData) return;
+    // setup to read from multiple part files by defining the part number as a variable and incrementing
+    // until no more parts are found
+    for (let p = 0; ; p++) {
+      const partIndexName = `pws.part${p}.index`;
+      const partAssetsName = `pws.part${p}.assets`;
 
-    // 3. Extract offset and length using DataView
-    const view = new DataView(E.toArrayBuffer(indexData));
-    const offset = view.getUint32(0, true); // true = Little Endian
-    const length = view.getUint32(4, true);
+      // Quick existence check for this part set
+      const exists = STORAGE.read(partIndexName, 0, 1);
+      if (!exists) break;
 
-    if (length === 0) return; // No data for this ID/frame
+      // Read the 8-byte index entry from this part index
+      const idxEntry = STORAGE.read(partIndexName, entryPos, 8);
+      if (!idxEntry) continue;
 
-    // 4. Read ONLY the specific sprite data from the assets file
-    const buffer = STORAGE.read("pws.assets", offset, length);
-    const img = E.toArrayBuffer(buffer);
+      const view = new DataView(E.toArrayBuffer(idxEntry));
+      const offset = view.getUint32(0, true);
+      const length = view.getUint32(4, true);
 
-    // 5. Draw!
-    // Note: yOffset and height are removed because the converter
-    // now saves individual 64x64 frames with their own headers.
-    g.drawImage(img, 120, 5, {
-      palette: myPalette,
-      transparent: 0,
-      scale: 1.5,
-    });
+      if (length === 0) continue;
+
+      const buffer = STORAGE.read(partAssetsName, offset, length);
+      if (!buffer) return;
+
+      // Read and validate header
+      const arr = new Uint8Array(E.toArrayBuffer(buffer));
+      const width = arr[0];
+      const height = arr[1];
+      const bpp = arr[2];
+
+      // Debug: validate sprite format
+      if (width !== 64 || height !== 64 || bpp !== 3) {
+        console.log(
+          `Warning: Unexpected sprite format for ID ${id}: ${width}x${height}, ${bpp}bpp`
+        );
+      }
+
+      // Option 1: Let g.drawImage parse the header (simplest)
+      g.drawImage(E.toArrayBuffer(buffer), 80, 5, {
+        palette: myPalette,
+        transparent: 0,
+        scale: 1.5,
+      });
+      return;
+    }
   }
 
   // -------------------------------------------------------------
@@ -245,6 +271,7 @@
     let dayStr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getDay()];
     g.setFont("4x6", 2); // Smaller font for the day
     g.drawString(dayStr + " " + timeStr, 10, 155);
+    // Draw Pokémon
     drawFromPack(state.pokeID, state.frame);
 
     g.setFont("6x8", 3).drawString(

@@ -148,14 +148,14 @@
 > > > ### 1. Core Watch App (Bangle.js / JavaScript)
 > > >
 > > > - [ ] **Pedometer Engine**:
-> > >   - [ ] **PE**: Get steps data from `Bangle.on('step')`.
+> > >   - [x] **PE**: Get steps data from `Bangle.on('step')`.
 > > >   - [ ] **PE**: Filter noise/movements to mimic Pokéwalker step counting.
 > > >   - [ ] **PE**: Test step accuracy with real-world walking.
 > > >   - [ ] **PE**: Explore path to send steps to phone for health apps.
 > > > - [ ] **Watt Accumulation**:
-> > >   - [ ] **WA**: Implement logic (e.g., 20 steps = 1 Watt).
+> > >   - [x] **WA**: Implement logic (e.g., 20 steps = 1 Watt).
 > > >   - [ ] **WA**: Correctly subtracts for using the Radar and Dowsing Machine.
-> > > - [ ] **1-Bit UI/UX**: Build 96x64 style LCD interface & animations._may just utilize full 176x176 to keep things sized nicely - will also need changes to the layout and potentially scaling_
+> > > - [ ] **1-Bit UI/UX**: Build 96x64 style LCD interface & animations. _may just utilize full 176x176 to keep things sized nicely - will also need changes to the layout and potentially scaling_
 > > > - [ ] **Mini-games**: Logic for Poké Radar and Dowsing Machine.
 > > > - [ ] **Data Persistence**: Save steps/Watts/Pokémon ID to `Storage`.
 > > >
