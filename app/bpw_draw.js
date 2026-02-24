@@ -3,13 +3,13 @@
 
   const myPalette = new Uint16Array([
     0x0000, // 0: Transparent
-    0xef7d, // 1: Very light greenish (almost white)
-    0xce59, // 2: Light green
-    0xad55, // 3: Medium-light green
-    0x8c51, // 4: Medium green
-    0x6b4d, // 5: Medium-dark green
-    0x4a49, // 6: Dark green
-    0x2945, // 7: Very dark green
+    0xc676, // 1: #C4CFB4 - Lightest (background)
+    0xad73, // 2: #ABB79E
+    0x8cd0, // 3: #8E9983
+    0x6bcd, // 4: #6F7868
+    0x52ca, // 5: #51594D
+    0x31e6, // 6: #373D35
+    0x1903, // 7: #1E211D - Darkest (ink)
   ]);
 
   if (!g.centerString)

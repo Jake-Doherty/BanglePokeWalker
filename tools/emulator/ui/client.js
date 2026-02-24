@@ -112,14 +112,20 @@ function handleCmd(o) {
           for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
           const opts = o.opts || {};
           const meta = o.img.meta || {};
-          const width = o.img.width || opts.width || 64;
-          const totalH = Math.floor(bytes.length / width) || 1;
+          const bpp = meta.bpp || 8;
+
+          // Espruino binary images begin with a 3-byte header: [width, height, bpp]
+          // The wrapper now reads this header and forwards it in meta, but we also
+          // read it directly from the buffer as the authoritative source.
+          const HEADER = 3;
+          const width = (bpp >= 1 && bpp <= 16 && bytes[0] > 0)
+            ? bytes[0]
+            : (o.img.width || opts.width || 64);
+          const height = (bpp >= 1 && bpp <= 16 && bytes[1] > 0)
+            ? bytes[1]
+            : (meta.height || opts.height || 64);
+
           const yOffset = meta.yOffset || opts.yOffset || 0;
-          const height =
-            meta.height ||
-            opts.height ||
-            totalH -
-              Math.floor(yOffset / (meta.height || opts.height || totalH));
           const transparent =
             typeof meta.transparent !== "undefined"
               ? meta.transparent
@@ -127,6 +133,23 @@ function handleCmd(o) {
               ? opts.transparent
               : null;
           const palette = o.img.palette || null;
+
+          // Unpacks a single 3-bit pixel index from the packed bit stream.
+          // Pixel data starts after the 3-byte header. 3 bits are packed
+          // MSB-first, potentially spanning byte boundaries.
+          function get3BitPixel(pixelIndex) {
+            const bitPos = (pixelIndex * 3) % 8;
+            const bytePos = HEADER + Math.floor(pixelIndex * 3 / 8);
+            if (bitPos <= 5) {
+              return (bytes[bytePos] >> (5 - bitPos)) & 0x7;
+            } else {
+              const firstBits = 8 - bitPos;
+              const remainBits = 3 - firstBits;
+              const hi = bytes[bytePos] & ((1 << firstBits) - 1);
+              const lo = (bytes[bytePos + 1] >> (8 - remainBits)) & ((1 << remainBits) - 1);
+              return (hi << remainBits) | lo;
+            }
+          }
 
           const tmp = document.createElement("canvas");
           tmp.width = width;
@@ -136,7 +159,17 @@ function handleCmd(o) {
           for (let row = 0; row < height; row++) {
             for (let col = 0; col < width; col++) {
               const srcY = yOffset + row;
-              const idx = bytes[srcY * width + col];
+              const pixelIndex = srcY * width + col;
+
+              // Extract palette index — method depends on bits-per-pixel
+              let idx;
+              if (bpp === 3) {
+                idx = get3BitPixel(pixelIndex);
+              } else {
+                // 8-bit indexed: pixel data follows directly after header
+                idx = bytes[HEADER + pixelIndex];
+              }
+
               const p = palette && palette[idx] ? palette[idx] : null;
               let r = 0,
                 g = 0,
@@ -148,8 +181,8 @@ function handleCmd(o) {
                 g = parseInt(p.substr(3, 2), 16);
                 b = parseInt(p.substr(5, 2), 16);
               } else {
-                // fallback: treat index as grayscale
-                r = g = b = idx;
+                // fallback: scale index to grayscale
+                r = g = b = Math.round((idx / ((1 << bpp) - 1)) * 255);
               }
               if (transparent !== null && idx === transparent) a = 0;
               const off = (row * width + col) * 4;

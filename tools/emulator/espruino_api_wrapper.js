@@ -492,14 +492,13 @@ module.exports = function setupEspruinoAPI(opts) {
               for (let i = 0; i < dv.length; i++) pal.push(rgb565ToHex(dv[i]));
             }
           }
-          // Try to infer width from opts.height and assumed frame count (default 2)
-          let inferredWidth = 64;
-          if (opts && opts.width) inferredWidth = opts.width;
-          else if (opts && opts.height && opts.height > 0) {
-            const frames = opts.frames || 2;
-            const possible = Math.floor(buf.length / (opts.height * frames));
-            if (possible >= 8) inferredWidth = possible;
-          }
+          // Read the Espruino image header: [width(1), height(1), bpp(1), ...pixels]
+          // This is the standard binary image format used by g.drawImage on-device.
+          const hdrWidth = buf.length >= 1 ? buf[0] : 0;
+          const hdrHeight = buf.length >= 2 ? buf[1] : 0;
+          const hdrBpp = buf.length >= 3 ? buf[2] : 0;
+          const inferredWidth = (opts && opts.width) || hdrWidth || 64;
+          const inferredHeight = (opts && opts.height) || hdrHeight || 64;
           const payload = {
             type: "indexed",
             b64: b64,
@@ -508,7 +507,8 @@ module.exports = function setupEspruinoAPI(opts) {
             palette: pal,
             meta: {
               transparent: opts && opts.transparent,
-              height: opts && opts.height,
+              height: inferredHeight,
+              bpp: hdrBpp,
               yOffset: opts && opts.yOffset,
               scale: opts && opts.scale,
             },
