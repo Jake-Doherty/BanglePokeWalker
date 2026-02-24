@@ -423,6 +423,21 @@ module.exports = function setupEspruinoAPI(opts) {
         r: Math.max(0, Math.floor(r)),
       });
     },
+    fillCircle: function () {
+      const [x, y, r] = normalizeCircleArgs(arguments);
+      sendEvent({
+        cmd: "fillCircle",
+        x: clipCoord(x),
+        y: clipCoord(y),
+        r: Math.max(0, Math.floor(r)),
+      });
+    },
+    getWidth: function () {
+      return 176;
+    },
+    getHeight: function () {
+      return 176;
+    },
     stringWidth: function (s, font) {
       const f = font || _font;
       return s ? charWidthForFont(f) * String(s).length : 0;
@@ -545,9 +560,24 @@ module.exports = function setupEspruinoAPI(opts) {
       _listeners[ev] = _listeners[ev] || [];
       _listeners[ev].push(cb);
     },
+    removeAllListeners: function (ev) {
+      if (ev) delete _listeners[ev];
+      else Object.keys(_listeners).forEach((k) => delete _listeners[k]);
+    },
     isLCDOn: () => true,
     setLCDPower: (p) => sendEvent({ cmd: "lcd", on: !!p }),
     buzz: (t, v) => sendEvent({ cmd: "buzz", t, v }),
+    getBattery: () =>
+      opts.battery !== undefined ? opts.battery : 85,
+    isCharging: () =>
+      opts.charging !== undefined ? opts.charging : false,
+    getAccel: () =>
+      opts.accel || { x: 0.02, y: -0.01, z: -0.98, diff: 0.01 },
+    getCompass: () =>
+      opts.compass || { x: 100, y: 200, z: -300, heading: 0, accuracy: 1 },
+    getPressure: () =>
+      opts.pressure || { pressure: 1013.25, temperature: 22.5 },
+    setGPSPower: (on) => sendEvent({ cmd: "gps_power", on: !!on }),
   };
 
   // storagePath helper
