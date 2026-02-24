@@ -22,3 +22,6 @@ Thumbs.db
 # Unready Assets
 assets/showdown
 assets/dist
+
+# Test Coverage Files
+coverage/
